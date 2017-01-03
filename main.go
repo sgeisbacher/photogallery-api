@@ -13,11 +13,18 @@ import (
 func main() {
 	fmt.Println("starting")
 	db, err := bolt.Open("./data/data.db", 0600, nil)
+	if err != nil {
+		fmt.Println("error while opening db:", err)
+	}
 	mediaService := &media.MediaService{db}
-	importManager := importer.ImportManager{}
+	galleryService := &media.GalleryService{db}
+	importManager := importer.ImportManager{
+		MediaService:   mediaService,
+		GalleryService: galleryService,
+	}
 	go importManager.ScanFolder("./data/orig")
 	http.HandleFunc("/", indexHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
 	fmt.Println("done!")
 }
 

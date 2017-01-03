@@ -38,17 +38,17 @@ func (srv *MediaService) FindMediaByHash(hash string) (*Media, error) {
 		b := tx.Bucket(BUCKET_MEDIAS)
 		data := b.Get([]byte(hash))
 		if data == nil {
-			return errors.New(fmt.Sprintf("key '%v' not found!", hash))
+			return errors.New(fmt.Sprintf("media '%v' not found!", hash))
 		}
 		var err error
-		media, err = gobDecode(data)
+		media, err = gobDecodeMedia(data)
 		return err
 	})
 
 	return media, err
 }
 
-func (srv *MediaService) AddMedia(media Media) error {
+func (srv *MediaService) Add(media Media) error {
 	return srv.Db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(BUCKET_MEDIAS)
 		if err != nil {
@@ -70,7 +70,7 @@ func (media Media) gobEncode() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func gobDecode(data []byte) (*Media, error) {
+func gobDecodeMedia(data []byte) (*Media, error) {
 	var m *Media
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)

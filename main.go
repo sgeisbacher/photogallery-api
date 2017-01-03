@@ -5,11 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/boltdb/bolt"
 	"github.com/sgeisbacher/photogallery-api/importer"
+	"github.com/sgeisbacher/photogallery-api/media"
 )
 
 func main() {
 	fmt.Println("starting")
+	db, err := bolt.Open("./data/data.db", 0600, nil)
+	mediaService := &media.MediaService{db}
 	importManager := importer.ImportManager{}
 	go importManager.ScanFolder("./data/orig")
 	http.HandleFunc("/", indexHandler)

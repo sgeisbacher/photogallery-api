@@ -8,10 +8,16 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/sgeisbacher/photogallery-api/media"
 )
+
+type ImportMediaData struct {
+	path        string
+	galleryName string
+}
 
 type ImportManager struct {
 	MediaService   *media.MediaService
@@ -20,35 +26,57 @@ type ImportManager struct {
 
 func (mgr ImportManager) ScanFolder(path string) {
 	var wg sync.WaitGroup
-	imageFilesChan := make(chan string)
+	imagesChan := make(chan ImportMediaData)
 
 	// start worker threads
-	go mgr.handleImageFile(imageFilesChan, &wg)
-	go mgr.handleImageFile(imageFilesChan, &wg)
+	go mgr.handleImageFile(imagesChan, &wg)
+	go mgr.handleImageFile(imagesChan, &wg)
+
+	path = addSlash(path)
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatalf("error while reading dir: %v", err)
 	}
 	for _, file := range files {
-		wg.Add(1)
 		if !file.IsDir() {
-			imageFilesChan <- path + "/" + file.Name()
+			fmt.Printf("skipping file '%v' (not allowed here), because its on gallery-folder-level\n", path+file.Name())
+			continue
 		}
+		scanGalleryFolder(file.Name(), addSlash(path+file.Name()), imagesChan, &wg)
 	}
 
-	close(imageFilesChan)
+	close(imagesChan)
 	wg.Wait()
 }
 
-func (mgr ImportManager) handleImageFile(imagesChan <-chan string, wg *sync.WaitGroup) {
-	for filePath := range imagesChan {
-		fileHash, err := hashFile(filePath)
-		if err != nil {
-			fmt.Printf("skipping file '%v' due to an error: %v\n", filePath, err)
+func scanGalleryFolder(galleryName, path string, imagesChan chan ImportMediaData, wg *sync.WaitGroup) {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatalf("error while reading dir: %v", err)
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			fmt.Printf("skipping directory '%v' (not allowed here), because its on image-level\n", addSlash(path+file.Name()))
 			continue
 		}
-		fmt.Printf("md5ChkSum of '%v': %v\n", filePath, fileHash)
+		wg.Add(1)
+		importMediaData := ImportMediaData{
+			path:        path + file.Name(),
+			galleryName: galleryName,
+		}
+		imagesChan <- importMediaData
+	}
+}
+
+func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *sync.WaitGroup) {
+	for importMediaData := range imagesChan {
+		fileHash, err := hashFile(importMediaData.path)
+		if err != nil {
+			fmt.Printf("skipping file '%v' due to an error: %v\n", importMediaData.path, err)
+			continue
+		}
+		fmt.Printf("md5ChkSum of '%v' in gallery '%v': %v\n", importMediaData.path, importMediaData.galleryName, fileHash)
 		wg.Done()
 	}
 }
@@ -68,4 +96,12 @@ func hashFile(filename string) (string, error) {
 	}
 	md5ChkSum = hex.EncodeToString(hash.Sum(nil))
 	return md5ChkSum, nil
+}
+
+func addSlash(path string) string {
+	path = strings.TrimSpace(path)
+	if !strings.HasSuffix(path, "/") {
+		path = path + "/"
+	}
+	return path
 }

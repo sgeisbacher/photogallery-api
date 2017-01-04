@@ -77,6 +77,12 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 			continue
 		}
 		fmt.Printf("md5ChkSum of '%v' in gallery '%v': %v\n", importMediaData.path, importMediaData.galleryName, fileHash)
+
+		media := media.Media{
+			Hash: fileHash,
+			Path: importMediaData.path,
+		}
+		mgr.MediaService.Add(media)
 		wg.Done()
 	}
 }

@@ -36,7 +36,7 @@ func (mgr ImportManager) ScanFolder(path string) error {
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return errors.New(fmt.Printf("error while reading dir: %v", err))
+		return errors.New(fmt.Sprintf("error while reading dir: %v", err))
 	}
 	for _, file := range files {
 		if !file.IsDir() {
@@ -48,6 +48,8 @@ func (mgr ImportManager) ScanFolder(path string) error {
 
 	close(imagesChan)
 	wg.Wait()
+
+	return nil
 }
 
 func scanGalleryFolder(galleryName, path string, imagesChan chan ImportMediaData, wg *sync.WaitGroup) {

@@ -29,7 +29,8 @@ type Media struct {
 }
 
 type MediaService struct {
-	Db *bolt.DB
+	Db             *bolt.DB
+	GalleryService *GalleryService
 }
 
 func (srv *MediaService) FindMediaByHash(hash string) (*Media, error) {
@@ -58,11 +59,17 @@ func (srv *MediaService) Add(media Media) error {
 	return srv.Db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(BUCKET_MEDIAS)
 		if err != nil {
+			fmt.Println("error while creating/getting bucket 'medias':", err)
 			return err
 		}
 
 		mediaEncoded, err := media.gobEncode()
-		return bucket.Put([]byte(media.Hash), mediaEncoded)
+		err = bucket.Put([]byte(media.Hash), mediaEncoded)
+		if err != nil {
+			fmt.Println("error while putting to medias-bucket:", err)
+		}
+
+		return err
 	})
 }
 

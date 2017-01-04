@@ -83,6 +83,11 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 			Path: importMediaData.path,
 		}
 		mgr.MediaService.Add(media)
+		err = mgr.GalleryService.AddMediaToGallery(importMediaData.galleryName, media)
+		if err != nil {
+			fmt.Printf("error while putting media to gallery '%v': %v\n", importMediaData.galleryName, err)
+			// TODO delete media!!!
+		}
 		wg.Done()
 	}
 }

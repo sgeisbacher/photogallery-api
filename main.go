@@ -16,8 +16,11 @@ func main() {
 	if err != nil {
 		fmt.Println("error while opening db:", err)
 	}
-	mediaService := &media.MediaService{db}
 	galleryService := &media.GalleryService{db}
+	mediaService := &media.MediaService{
+		Db:             db,
+		GalleryService: galleryService,
+	}
 	importManager := importer.ImportManager{
 		MediaService:   mediaService,
 		GalleryService: galleryService,

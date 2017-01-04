@@ -23,7 +23,7 @@ type Media struct {
 	Name          string
 	Size          int
 	ThumbnailPath string
-	ImagePath     string
+	Path          string
 	OrigPath      string
 	MediaType     int
 }
@@ -35,12 +35,14 @@ type MediaService struct {
 func (srv *MediaService) FindMediaByHash(hash string) (*Media, error) {
 	var media *Media
 	err := srv.Db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(BUCKET_MEDIAS)
-		data := b.Get([]byte(hash))
+		bucket, err := tx.CreateBucketIfNotExists(BUCKET_MEDIAS)
+		if err != nil {
+			return err
+		}
+		data := bucket.Get([]byte(hash))
 		if data == nil {
 			return errors.New(fmt.Sprintf("media '%v' not found!", hash))
 		}
-		var err error
 		media, err = gobDecodeMedia(data)
 		return err
 	})
@@ -49,6 +51,10 @@ func (srv *MediaService) FindMediaByHash(hash string) (*Media, error) {
 }
 
 func (srv *MediaService) Add(media Media) error {
+	if media, _ := srv.FindMediaByHash(media.Hash); media != nil {
+		fmt.Printf("skipping '%v', it already exists\n", media.Path)
+		return nil
+	}
 	return srv.Db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(BUCKET_MEDIAS)
 		if err != nil {

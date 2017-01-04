@@ -3,10 +3,10 @@ package importer
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -24,7 +24,7 @@ type ImportManager struct {
 	GalleryService *media.GalleryService
 }
 
-func (mgr ImportManager) ScanFolder(path string) {
+func (mgr ImportManager) ScanFolder(path string) error {
 	var wg sync.WaitGroup
 	imagesChan := make(chan ImportMediaData)
 
@@ -36,7 +36,7 @@ func (mgr ImportManager) ScanFolder(path string) {
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatalf("error while reading dir: %v", err)
+		return errors.New(fmt.Printf("error while reading dir: %v", err))
 	}
 	for _, file := range files {
 		if !file.IsDir() {
@@ -53,7 +53,8 @@ func (mgr ImportManager) ScanFolder(path string) {
 func scanGalleryFolder(galleryName, path string, imagesChan chan ImportMediaData, wg *sync.WaitGroup) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatalf("error while reading dir: %v", err)
+		fmt.Printf("error while reading dir: %v\n", err)
+		return
 	}
 	for _, file := range files {
 		if file.IsDir() {

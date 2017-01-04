@@ -5,18 +5,13 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"regexp"
-	"strings"
 
 	"github.com/boltdb/bolt"
+	utils "github.com/sgeisbacher/goutils"
 )
 
 var (
 	BUCKET_GALLERIES = []byte("galleries")
-)
-
-var (
-	REGEX_SPECIAL_CHARS = regexp.MustCompile("[^a-zA-Z0-9-]")
 )
 
 type Gallery struct {
@@ -47,7 +42,7 @@ func (srv *GalleryService) FindGalleryById(id string) (*Gallery, error) {
 }
 
 func (srv *GalleryService) Add(galleryName string) (*Gallery, error) {
-	galleryId := BuildId(galleryName)
+	galleryId := utils.ToID(galleryName)
 	gallery, _ := srv.FindGalleryById(galleryId)
 	if gallery != nil {
 		return gallery, nil
@@ -80,7 +75,7 @@ func (srv *GalleryService) AddMediaToGallery(galleryName string, media Media) er
 			return err
 		}
 
-		galleryId := BuildId(galleryName)
+		galleryId := utils.ToID(galleryName)
 		gallery := getGalleryFromBucket(bucket, galleryId)
 		if gallery == nil {
 			return errors.New(fmt.Sprintf("could not find gallery '%v'", galleryId))
@@ -91,14 +86,6 @@ func (srv *GalleryService) AddMediaToGallery(galleryName string, media Media) er
 		galleryEncoded, err := gallery.gobEncode()
 		return bucket.Put([]byte(gallery.Id), galleryEncoded)
 	})
-}
-
-func BuildId(name string) string {
-	replacer := strings.NewReplacer(" ", "-", "ä", "ae", "ö", "oe", "ü", "ue", "ß", "ss")
-	id := replacer.Replace(name)
-	id = REGEX_SPECIAL_CHARS.ReplaceAllString(id, "")
-	id = strings.Trim(id, "-")
-	return strings.ToLower(id)
 }
 
 func getGalleryFromBucket(bucket *bolt.Bucket, id string) *Gallery {

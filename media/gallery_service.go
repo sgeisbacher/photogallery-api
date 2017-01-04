@@ -5,12 +5,18 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/boltdb/bolt"
 )
 
 var (
 	BUCKET_GALLERIES = []byte("galleries")
+)
+
+var (
+	REGEX_SPECIAL_CHARS = regexp.MustCompile("[^a-zA-Z0-9-]")
 )
 
 type Gallery struct {
@@ -88,9 +94,11 @@ func (srv *GalleryService) AddMediaToGallery(galleryName string, media Media) er
 }
 
 func BuildId(name string) string {
-	// TODO normalize name and replace special-chars with _
-	id := name
-	return id
+	replacer := strings.NewReplacer(" ", "-", "ä", "ae", "ö", "oe", "ü", "ue", "ß", "ss")
+	id := replacer.Replace(name)
+	id = REGEX_SPECIAL_CHARS.ReplaceAllString(id, "")
+	id = strings.Trim(id, "-")
+	return strings.ToLower(id)
 }
 
 func getGalleryFromBucket(bucket *bolt.Bucket, id string) *Gallery {

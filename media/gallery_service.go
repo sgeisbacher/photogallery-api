@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/boltdb/bolt"
-	utils "github.com/sgeisbacher/goutils"
+	datautils "github.com/sgeisbacher/goutils/datautils"
 )
 
 var (
@@ -42,7 +42,7 @@ func (srv *GalleryService) FindGalleryById(id string) (*Gallery, error) {
 }
 
 func (srv *GalleryService) Add(galleryName string) (*Gallery, error) {
-	galleryId := utils.ToID(galleryName)
+	galleryId := datautils.ToID(galleryName)
 	gallery, _ := srv.FindGalleryById(galleryId)
 	if gallery != nil {
 		return gallery, nil
@@ -75,7 +75,7 @@ func (srv *GalleryService) AddMediaToGallery(galleryName string, media Media) er
 			return err
 		}
 
-		galleryId := utils.ToID(galleryName)
+		galleryId := datautils.ToID(galleryName)
 		gallery := getGalleryFromBucket(bucket, galleryId)
 		if gallery == nil {
 			return errors.New(fmt.Sprintf("could not find gallery '%v'", galleryId))

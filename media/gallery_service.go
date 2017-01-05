@@ -88,6 +88,27 @@ func (srv *GalleryService) AddMediaToGallery(galleryName string, media Media) er
 	})
 }
 
+func (srv *GalleryService) FindAll() ([]*Gallery, error) {
+	var galleries []*Gallery
+	err := srv.Db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(BUCKET_GALLERIES)
+		if bucket == nil {
+			return errors.New(fmt.Sprintf("bucket '%v' not found", string(BUCKET_GALLERIES)))
+		}
+		cursor := bucket.Cursor()
+		for key, data := cursor.First(); data != nil; key, data = cursor.Next() {
+			gallery, err := gobDecodeGallery(data)
+			if err != nil {
+				fmt.Printf("could not decode '%v': %v\n", key, err)
+				continue
+			}
+			galleries = append(galleries, gallery)
+		}
+		return nil
+	})
+	return galleries, err
+}
+
 func getGalleryFromBucket(bucket *bolt.Bucket, id string) *Gallery {
 	data := bucket.Get([]byte(id))
 	if data == nil {

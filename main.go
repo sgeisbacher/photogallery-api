@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/boltdb/bolt"
 	"github.com/sgeisbacher/photogallery-api/importer"
 	"github.com/sgeisbacher/photogallery-api/media"
+	"github.com/sgeisbacher/photogallery-api/rest"
 )
 
 func main() {
@@ -26,8 +26,11 @@ func main() {
 		GalleryService: galleryService,
 	}
 	go importManager.ScanFolder("./data/orig")
-	http.HandleFunc("/", indexHandler)
-	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
+	restServer := rest.Server{
+		RestGalleryHandler: &rest.RestGalleryHandler{galleryService},
+		RestMediaHandler:   &rest.RestMediaHandler{mediaService},
+	}
+	restServer.Serve()
 	fmt.Println("done!")
 }
 

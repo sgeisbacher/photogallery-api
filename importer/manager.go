@@ -79,7 +79,6 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 			fmt.Printf("skipping file '%v' due to an error: %v\n", importMediaData.path, err)
 			continue
 		}
-		fmt.Printf("md5ChkSum of '%v' in gallery '%v': %v\n", importMediaData.path, importMediaData.galleryName, fileHash)
 
 		media := media.Media{
 			Hash: fileHash,

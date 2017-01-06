@@ -28,14 +28,14 @@ type GalleryService struct {
 func (srv *GalleryService) FindGalleryById(id string) (*Gallery, error) {
 	var gallery *Gallery
 	err := srv.Db.View(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(BUCKET_GALLERIES)
-		if err != nil {
-			return err
+		bucket := tx.Bucket(BUCKET_GALLERIES)
+		if bucket == nil {
+			return errors.New(fmt.Sprintf("bucket '%v' not found", BUCKET_GALLERIES))
 		}
 
 		gallery = getGalleryFromBucket(bucket, id)
 
-		return err
+		return nil
 	})
 
 	return gallery, err

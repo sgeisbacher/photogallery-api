@@ -1,10 +1,10 @@
 package rest
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/sgeisbacher/goutils/webutils"
 	"github.com/sgeisbacher/photogallery-api/media"
 )
 
@@ -12,16 +12,17 @@ type RestGalleryHandler struct {
 	GalleryService *media.GalleryService
 }
 
-func (handler *RestGalleryHandler) handleGetGalleries(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+func (handler *RestGalleryHandler) handleGetGalleries(w http.ResponseWriter, req *http.Request) {
 	galleries, err := handler.GalleryService.FindAll()
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+	webutils.RespondWithJSON(w, galleries, err != nil)
+}
+
+func (handler *RestGalleryHandler) handleGetGallery(w http.ResponseWriter, req *http.Request) {
+	id, ok := mux.Vars(req)["id"]
+	var gallery *media.Gallery
+	var err error
+	if ok {
+		gallery, err = handler.GalleryService.FindGalleryById(id)
 	}
-	if err := json.NewEncoder(w).Encode(galleries); err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	webutils.RespondWithJSON(w, gallery, err != nil)
 }

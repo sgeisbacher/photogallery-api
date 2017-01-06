@@ -1,10 +1,10 @@
 package rest
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/sgeisbacher/goutils/webutils"
 	"github.com/sgeisbacher/photogallery-api/media"
 )
 
@@ -12,16 +12,17 @@ type RestMediaHandler struct {
 	MediaService *media.MediaService
 }
 
-func (handler *RestMediaHandler) handleGetMedias(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+func (handler *RestMediaHandler) handleGetMedias(w http.ResponseWriter, req *http.Request) {
 	medias, err := handler.MediaService.FindAll()
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+	webutils.RespondWithJSON(w, medias, err != nil)
+}
+
+func (handler *RestMediaHandler) handleGetMedia(w http.ResponseWriter, req *http.Request) {
+	hash, ok := mux.Vars(req)["hash"]
+	var media *media.Media
+	var err error
+	if ok {
+		media, err = handler.MediaService.FindMediaByHash(hash)
 	}
-	if err := json.NewEncoder(w).Encode(medias); err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	webutils.RespondWithJSON(w, media, err != nil)
 }

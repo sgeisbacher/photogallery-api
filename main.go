@@ -16,25 +16,43 @@ func main() {
 	if err != nil {
 		fmt.Println("error while opening db:", err)
 	}
+	// create services
 	galleryService := &media.GalleryService{db}
-	mediaService := &media.MediaService{
-		Db:             db,
-		GalleryService: galleryService,
-	}
-	importManager := importer.ImportManager{
-		MediaService:   mediaService,
-		GalleryService: galleryService,
-	}
+	mediaService := createMediaService(db, galleryService)
+	importManager := createImportManager(mediaService, galleryService)
+
+	// start importer
 	go importManager.ScanFolder("./data/orig")
-	restServer := rest.Server{
-		RestGalleryHandler: &rest.RestGalleryHandler{galleryService},
-		RestMediaHandler:   &rest.RestMediaHandler{mediaService},
-	}
+
+	// create and start RestServer
+	restServer := createRestServer(galleryService, mediaService)
 	restServer.Serve()
+
 	fmt.Println("done!")
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	responseStr := `<h1>this is photogallery-api</h1><p>...</p>`
 	fmt.Fprintln(w, responseStr)
+}
+
+func createMediaService(db *bolt.DB, galleryService *media.GalleryService) *media.MediaService {
+	return &media.MediaService{
+		Db:             db,
+		GalleryService: galleryService,
+	}
+}
+
+func createImportManager(mediaService *media.MediaService, galleryService *media.GalleryService) importer.ImportManager {
+	return importer.ImportManager{
+		MediaService:   mediaService,
+		GalleryService: galleryService,
+	}
+}
+
+func createRestServer(galleryService *media.GalleryService, mediaService *media.MediaService) rest.Server {
+	return rest.Server{
+		RestGalleryHandler: &rest.RestGalleryHandler{galleryService},
+		RestMediaHandler:   &rest.RestMediaHandler{mediaService},
+	}
 }

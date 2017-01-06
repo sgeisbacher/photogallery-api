@@ -12,10 +12,10 @@ import (
 
 func main() {
 	fmt.Println("starting")
-	db, err := bolt.Open("./data/data.db", 0600, nil)
-	if err != nil {
-		fmt.Println("error while opening db:", err)
-	}
+
+	// create db
+	db := createDB()
+
 	// create services
 	galleryService := &media.GalleryService{db}
 	mediaService := createMediaService(db, galleryService)
@@ -29,6 +29,14 @@ func main() {
 	restServer.Serve()
 
 	fmt.Println("done!")
+}
+
+func createDB() *bolt.DB {
+	db, err := bolt.Open("./data/data.db", 0600, nil)
+	if err != nil {
+		panic(fmt.Sprintf("could not create db: %v", err))
+	}
+	return db
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {

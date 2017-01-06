@@ -81,8 +81,8 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 		}
 
 		media := media.Media{
-			Hash: fileHash,
-			Path: importMediaData.path,
+			Hash:     fileHash,
+			OrigPath: importMediaData.path,
 		}
 		mgr.MediaService.Add(media)
 		err = mgr.GalleryService.AddMediaToGallery(importMediaData.galleryName, media)

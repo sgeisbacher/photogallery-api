@@ -42,7 +42,7 @@ func (srv *MediaService) FindMediaByHash(hash string) (*Media, error) {
 		}
 		data := bucket.Get([]byte(hash))
 		if data == nil {
-			return errors.New(fmt.Sprintf("media '%v' not found!", hash))
+			return nil
 		}
 		var err error
 		media, err = gobDecodeMedia(data)

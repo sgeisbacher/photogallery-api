@@ -15,6 +15,7 @@ import (
 )
 
 type ImportMediaData struct {
+	size        int64
 	path        string
 	galleryName string
 }
@@ -67,6 +68,7 @@ func scanGalleryFolder(galleryName, path string, imagesChan chan ImportMediaData
 		importMediaData := ImportMediaData{
 			path:        path + file.Name(),
 			galleryName: galleryName,
+			size:        file.Size(),
 		}
 		imagesChan <- importMediaData
 	}
@@ -81,8 +83,10 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 		}
 
 		media := media.Media{
-			Hash:     fileHash,
-			OrigPath: importMediaData.path,
+			Hash:      fileHash,
+			OrigPath:  importMediaData.path,
+			Size:      importMediaData.size,
+			MediaType: media.MEDIA_TYPE_PHOTO,
 		}
 		mgr.MediaService.Add(media)
 		err = mgr.GalleryService.AddMediaToGallery(importMediaData.galleryName, media)

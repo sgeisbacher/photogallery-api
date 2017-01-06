@@ -21,7 +21,7 @@ var (
 type Media struct {
 	Hash          string
 	Name          string
-	Size          int
+	Size          int64
 	ThumbnailPath string
 	Path          string
 	OrigPath      string
@@ -54,7 +54,7 @@ func (srv *MediaService) FindMediaByHash(hash string) (*Media, error) {
 
 func (srv *MediaService) Add(media Media) error {
 	if media, _ := srv.FindMediaByHash(media.Hash); media != nil {
-		fmt.Printf("skipping '%v' (%v), it already exists\n", media.Path, media.Hash)
+		fmt.Printf("skipping '%v' (%v), it already exists\n", media.OrigPath, media.Hash)
 		return nil
 	}
 	return srv.Db.Update(func(tx *bolt.Tx) error {
@@ -67,7 +67,7 @@ func (srv *MediaService) Add(media Media) error {
 		mediaEncoded, err := media.gobEncode()
 		err = bucket.Put([]byte(media.Hash), mediaEncoded)
 
-		fmt.Printf("added media '%v' with md5ChkSum: %v\n", media.Path, media.Hash)
+		fmt.Printf("added media '%v' with md5ChkSum: %v\n", media.OrigPath, media.Hash)
 
 		return err
 	})

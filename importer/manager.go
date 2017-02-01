@@ -90,7 +90,7 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 			Size:      importMediaData.size,
 			MediaType: media.MEDIA_TYPE_PHOTO,
 		}
-		mgr.MediaService.Add(media)
+		mgr.MediaService.Add(media, false)
 		err = mgr.GalleryService.AddMediaToGallery(importMediaData.galleryName, media)
 		if err != nil {
 			fmt.Printf("error while putting media to gallery '%v': %v\n", importMediaData.galleryName, err)

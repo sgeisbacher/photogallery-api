@@ -52,10 +52,12 @@ func (srv *MediaService) FindMediaByHash(hash string) (*Media, error) {
 	return media, err
 }
 
-func (srv *MediaService) Add(media Media) error {
-	if media, _ := srv.FindMediaByHash(media.Hash); media != nil {
-		fmt.Printf("skipping '%v' (%v), it already exists\n", media.OrigPath, media.Hash)
-		return nil
+func (srv *MediaService) Add(media Media, force bool) error {
+	if !force {
+		if media, _ := srv.FindMediaByHash(media.Hash); media != nil {
+			fmt.Printf("skipping '%v' (%v), it already exists\n", media.OrigPath, media.Hash)
+			return nil
+		}
 	}
 	return srv.Db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(BUCKET_MEDIAS)

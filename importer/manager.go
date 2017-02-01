@@ -26,6 +26,7 @@ type ImportManager struct {
 }
 
 func (mgr ImportManager) ScanFolder(path string) error {
+	fmt.Printf("running import in '%v' ...\n", path)
 	var wg sync.WaitGroup
 	imagesChan := make(chan ImportMediaData)
 
@@ -50,6 +51,7 @@ func (mgr ImportManager) ScanFolder(path string) error {
 	close(imagesChan)
 	wg.Wait()
 
+	fmt.Println("Importer ... done")
 	return nil
 }
 

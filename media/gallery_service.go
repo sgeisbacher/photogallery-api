@@ -7,7 +7,8 @@ import (
 	"fmt"
 
 	"github.com/boltdb/bolt"
-	datautils "github.com/sgeisbacher/goutils/datautils"
+	"github.com/sgeisbacher/goutils/datautils"
+	"github.com/sgeisbacher/goutils/sliceutils"
 )
 
 var (
@@ -81,7 +82,9 @@ func (srv *GalleryService) AddMediaToGallery(galleryName string, media Media) er
 			return errors.New(fmt.Sprintf("could not find gallery '%v'", galleryId))
 		}
 
-		gallery.Photos = append(gallery.Photos, media.Hash)
+		if !sliceutils.Contains(gallery.Photos, media.Hash) {
+			gallery.Photos = append(gallery.Photos, media.Hash)
+		}
 
 		galleryEncoded, err := gallery.gobEncode()
 		return bucket.Put([]byte(gallery.Id), galleryEncoded)

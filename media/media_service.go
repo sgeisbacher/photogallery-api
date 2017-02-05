@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -26,6 +27,7 @@ type Media struct {
 	Path          string
 	OrigPath      string
 	MediaType     int
+	ShootTime     time.Time
 }
 
 type MediaService struct {

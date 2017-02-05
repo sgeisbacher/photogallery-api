@@ -5,8 +5,11 @@ import (
 	"net/http"
 
 	"github.com/boltdb/bolt"
+	"github.com/robfig/cron"
+	"github.com/sgeisbacher/photogallery-api/imageconvertion"
 	"github.com/sgeisbacher/photogallery-api/importer"
 	"github.com/sgeisbacher/photogallery-api/media"
+	"github.com/sgeisbacher/photogallery-api/metadata"
 	"github.com/sgeisbacher/photogallery-api/rest"
 )
 
@@ -20,9 +23,15 @@ func main() {
 	galleryService := &media.GalleryService{db}
 	mediaService := createMediaService(db, galleryService)
 	importManager := createImportManager(mediaService, galleryService)
+	metaDataManager := createMetaDataManager(mediaService)
 
 	// start importer
 	go importManager.ScanFolder("./data/orig")
+
+	// set up cronjobs
+	cronJobs := cron.New()
+	cronJobs.AddFunc("@every 30s", func() { metaDataManager.Run() })
+	cronJobs.Start()
 
 	// create and start RestServer
 	restServer := createRestServer(galleryService, mediaService)
@@ -62,5 +71,17 @@ func createRestServer(galleryService *media.GalleryService, mediaService *media.
 	return rest.Server{
 		RestGalleryHandler: &rest.RestGalleryHandler{galleryService},
 		RestMediaHandler:   &rest.RestMediaHandler{mediaService},
+	}
+}
+
+func createMetaDataManager(mediaService *media.MediaService) *metadata.MetaDataManager {
+	var handlers []metadata.MetaDataHandler
+	handlers = append(handlers, metadata.ShootTimeMetaDataHandler{})
+	handlers = append(handlers, metadata.ThumbnailHandler{
+		imageconvertion.ImageMagickImageConverter{},
+	})
+	return &metadata.MetaDataManager{
+		MediaService:     mediaService,
+		MetaDataHandlers: handlers,
 	}
 }

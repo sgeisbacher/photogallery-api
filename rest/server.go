@@ -3,6 +3,7 @@ package rest
 import (
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/gorilla/mux"
 )
@@ -10,7 +11,10 @@ import (
 type Server struct {
 	RestGalleryHandler *RestGalleryHandler
 	RestMediaHandler   *RestMediaHandler
+	MediaFilesHandler  http.Handler
 }
+
+var REGEXP_DATA_URL = regexp.MustCompile(`^/data/media/(big|thumb|orig)/(\w+)$`)
 
 func (srv *Server) Serve() {
 	router := mux.NewRouter().StrictSlash(true)
@@ -18,5 +22,6 @@ func (srv *Server) Serve() {
 	router.Methods("GET").Path("/galleries/{id}").HandlerFunc(srv.RestGalleryHandler.handleGetGallery)
 	router.Methods("GET").Path("/medias").HandlerFunc(srv.RestMediaHandler.handleGetMedias)
 	router.Methods("GET").Path("/medias/{hash}").HandlerFunc(srv.RestMediaHandler.handleGetMedia)
+	router.Methods("GET").PathPrefix("/data/media/").Handler(srv.MediaFilesHandler)
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", router))
 }

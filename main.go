@@ -68,9 +68,17 @@ func createImportManager(mediaService *media.MediaService, galleryService *media
 }
 
 func createRestServer(galleryService *media.GalleryService, mediaService *media.MediaService) rest.Server {
+	hashFileSystem := rest.HashFileSystem{
+		DataRoot:     "",
+		MediaService: mediaService,
+	}
+	fileSystemLogDecorator := rest.FileSystemLogDecorator{
+		FileSystem: hashFileSystem,
+	}
 	return rest.Server{
 		RestGalleryHandler: &rest.RestGalleryHandler{galleryService},
 		RestMediaHandler:   &rest.RestMediaHandler{mediaService},
+		MediaFilesHandler:  http.FileServer(fileSystemLogDecorator),
 	}
 }
 

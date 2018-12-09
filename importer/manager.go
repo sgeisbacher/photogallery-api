@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/sgeisbacher/photogallery-api/labels"
 	"github.com/sgeisbacher/photogallery-api/media"
 )
 
@@ -21,8 +22,6 @@ type ImportMediaData struct {
 }
 
 type ImportManager struct {
-	MediaService   *media.MediaService
-	GalleryService *media.GalleryService
 }
 
 func (mgr ImportManager) ScanFolder(path string) error {
@@ -45,6 +44,7 @@ func (mgr ImportManager) ScanFolder(path string) error {
 			fmt.Printf("skipping file '%v' (not allowed here), because its on gallery-folder-level\n", path+file.Name())
 			continue
 		}
+		fmt.Printf("importing folder %q ...\n", file.Name())
 		scanGalleryFolder(file.Name(), addSlash(path+file.Name()), imagesChan, &wg)
 	}
 
@@ -84,14 +84,15 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 			continue
 		}
 
-		media := media.Media{
+		m := media.Media{
 			Hash:      fileHash,
 			OrigPath:  importMediaData.path,
 			Size:      importMediaData.size,
 			MediaType: media.MEDIA_TYPE_PHOTO,
 		}
-		mgr.MediaService.Add(media, false)
-		err = mgr.GalleryService.AddMediaToGallery(importMediaData.galleryName, media)
+		label := labels.Add(importMediaData.galleryName)
+		media.Add(&m)
+		err = labels.LabelMedia(label.ID, m)
 		if err != nil {
 			fmt.Printf("error while putting media to gallery '%v': %v\n", importMediaData.galleryName, err)
 			// TODO delete media!!!

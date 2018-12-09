@@ -15,7 +15,6 @@ type MetaDataHandler interface {
 }
 
 type MetaDataManager struct {
-	MediaService     *media.MediaService
 	MetaDataHandlers []MetaDataHandler
 }
 
@@ -30,27 +29,23 @@ func (mgr *MetaDataManager) Run() {
 		fmt.Println("MetaDataManager: no handlers configured, skipping run ...")
 		return
 	}
-	medias, err := mgr.MediaService.FindAll()
-	if err != nil {
-		fmt.Println("error while getting all medias:", medias)
-		return
-	}
-	for _, media := range medias {
+	medias := media.FindAll()
+	for _, m := range medias {
 		changed := false
-		ctx := &MetaDataHandlerContext{media: media}
+		ctx := &MetaDataHandlerContext{media: m}
 		for _, handler := range mgr.MetaDataHandlers {
 			if handler.UpdateNeeded(ctx) {
-				fmt.Printf("processing '%v' on media '%v' ...\n", handler.GetName(), media.Hash)
+				fmt.Printf("processing '%v' on media '%v' ...\n", handler.GetName(), m.Hash)
 				err := runHandler(handler, ctx)
 				if err != nil {
-					fmt.Print("error while processing '%v' on '%v': %v\n", handler.GetName(), media.Hash, err)
+					fmt.Print("error while processing '%v' on '%v': %v\n", handler.GetName(), m.Hash, err)
 					continue
 				}
 				changed = true
 			}
 		}
 		if changed {
-			mgr.MediaService.Add(*media, true)
+			media.Add(m)
 		}
 	}
 	fmt.Println("MetaDataManager ... done!")

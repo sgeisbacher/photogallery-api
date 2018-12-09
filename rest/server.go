@@ -9,17 +9,17 @@ import (
 )
 
 type Server struct {
-	RestGalleryHandler *RestGalleryHandler
-	RestMediaHandler   *RestMediaHandler
-	MediaFilesHandler  http.Handler
+	RestLabelsHandler *RestLabelsHandler
+	RestMediaHandler  *RestMediaHandler
+	MediaFilesHandler http.Handler
 }
 
 var REGEXP_DATA_URL = regexp.MustCompile(`^/data/media/(big|thumb|orig)/(\w+)$`)
 
 func (srv *Server) Serve() {
 	router := mux.NewRouter().StrictSlash(true)
-	router.Methods("GET").Path("/galleries").HandlerFunc(srv.RestGalleryHandler.handleGetGalleries)
-	router.Methods("GET").Path("/galleries/{id}").HandlerFunc(srv.RestGalleryHandler.handleGetGallery)
+	router.Methods("GET").Path("/labels").HandlerFunc(srv.RestLabelsHandler.handleGetLabels)
+	router.Methods("GET").Path("/labels/{id}").HandlerFunc(srv.RestLabelsHandler.handleGetLabel)
 	router.Methods("GET").Path("/medias").HandlerFunc(srv.RestMediaHandler.handleGetMedias)
 	router.Methods("GET").Path("/medias/{hash}").HandlerFunc(srv.RestMediaHandler.handleGetMedia)
 	router.Methods("GET").PathPrefix("/data/media/").Handler(srv.MediaFilesHandler)

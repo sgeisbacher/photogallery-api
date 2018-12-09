@@ -2,6 +2,7 @@ package rest
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -11,7 +12,6 @@ import (
 )
 
 type RestMediaHandler struct {
-	MediaService *media.MediaService
 }
 
 type MediaDTO struct {
@@ -22,11 +22,12 @@ type MediaDTO struct {
 	OrigUrl   string
 	MediaType int
 	ShootTime time.Time
+	Labels    []string
 }
 
 func (handler *RestMediaHandler) handleGetMedias(w http.ResponseWriter, req *http.Request) {
-	medias, err := handler.MediaService.FindAll()
-	webutils.RespondWithJSON(w, medias, err != nil)
+	medias := media.FindAll()
+	webutils.RespondWithJSON(w, medias, false)
 }
 
 func (handler *RestMediaHandler) handleGetMedia(w http.ResponseWriter, req *http.Request) {
@@ -35,26 +36,33 @@ func (handler *RestMediaHandler) handleGetMedia(w http.ResponseWriter, req *http
 		webutils.RespondWithJSON(w, nil, true)
 		return
 	}
-	media, err := handler.MediaService.FindMediaByHash(hash)
+	m, err := media.Find(hash)
 	if err != nil {
 		webutils.RespondWithJSON(w, nil, true)
 		return
 	}
-	mediaDTO, err := CreateMediaDTO(media)
+	labels, err := media.GetLabels(m)
+	if err != nil {
+		fmt.Printf("error while getting labels for media %q: %v\n", m.Hash, err)
+		webutils.RespondWithJSON(w, nil, true)
+		return
+	}
+	mediaDTO, err := CreateMediaDTO(m, labels)
 	webutils.RespondWithJSON(w, mediaDTO, err != nil)
 }
 
-func CreateMediaDTO(media *media.Media) (*MediaDTO, error) {
-	if media.Hash == "" {
+func CreateMediaDTO(m *media.Media, labels []string) (*MediaDTO, error) {
+	if m.Hash == "" {
 		return nil, errors.New("could not create MediaDTO from empty Media")
 	}
 	return &MediaDTO{
-		Hash:      media.Hash,
-		Name:      media.Name,
-		ThumbUrl:  "/data/media/thumb/" + media.Hash,
-		BigUrl:    "/data/media/big/" + media.Hash,
-		OrigUrl:   "/data/media/orig/" + media.Hash,
-		MediaType: media.MediaType,
-		ShootTime: media.ShootTime,
+		Hash:      m.Hash,
+		Name:      m.Name,
+		ThumbUrl:  "/data/media/thumb/" + m.Hash,
+		BigUrl:    "/data/media/big/" + m.Hash,
+		OrigUrl:   "/data/media/orig/" + m.Hash,
+		MediaType: m.MediaType,
+		ShootTime: m.ShootTime,
+		Labels:    labels,
 	}, nil
 }

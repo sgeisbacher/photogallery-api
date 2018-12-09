@@ -14,8 +14,7 @@ import (
 const FALLBACK_IMAGE_RELPATH = "fallback.jpg"
 
 type HashFileSystem struct {
-	DataRoot     string
-	MediaService *media.MediaService
+	DataRoot string
 }
 
 func (hfs HashFileSystem) Open(name string) (http.File, error) {
@@ -27,7 +26,7 @@ func (hfs HashFileSystem) Open(name string) (http.File, error) {
 	mediaType := groups[1]
 	hash := groups[2]
 
-	media, err := hfs.MediaService.FindMediaByHash(hash)
+	media, err := media.Find(hash)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not find media '%v' in db", hash))
 	}

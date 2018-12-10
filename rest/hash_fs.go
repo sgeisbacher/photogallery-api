@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -20,7 +19,7 @@ type HashFileSystem struct {
 func (hfs HashFileSystem) Open(name string) (http.File, error) {
 	groups := REGEXP_DATA_URL.FindStringSubmatch(name)
 	if len(groups) != 3 {
-		return nil, errors.New(fmt.Sprintf("url-path '%v' does not match", name))
+		return nil, fmt.Errorf("url-path '%v' does not match", name)
 	}
 
 	mediaType := groups[1]
@@ -28,7 +27,7 @@ func (hfs HashFileSystem) Open(name string) (http.File, error) {
 
 	media, err := media.Find(hash)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not find media '%v' in db", hash))
+		return nil, fmt.Errorf("could not find media '%v' in db", hash)
 	}
 
 	relPath := ""
@@ -40,7 +39,7 @@ func (hfs HashFileSystem) Open(name string) (http.File, error) {
 	case "orig":
 		relPath = media.OrigPath
 	default:
-		return nil, errors.New(fmt.Sprintf("unknown mediaType '%v'", mediaType))
+		return nil, fmt.Errorf("unknown mediaType '%v'", mediaType)
 	}
 
 	relPath = strings.TrimSpace(relPath)
@@ -52,8 +51,7 @@ func (hfs HashFileSystem) Open(name string) (http.File, error) {
 	absPath := filepath.Join(hfs.DataRoot, relPath)
 	file, err := os.Open(absPath)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error while opening file '%v'", absPath))
+		return nil, fmt.Errorf("error while opening file '%v'", absPath)
 	}
-	fmt.Printf("returning file '%v'\n", file)
 	return file, nil
 }

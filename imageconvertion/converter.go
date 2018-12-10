@@ -13,4 +13,4 @@ type MediaFormat struct {
 }
 
 var DEFAULT_THUMBNAIL_MEDIAFORMAT = MediaFormat{120, 120, "./data/thumbs/"}
-var DEFAULT_BIG_MEDIAFORMAT = MediaFormat{800, 600, "./data/thumbs/"}
+var DEFAULT_BIG_MEDIAFORMAT = MediaFormat{800, 600, "./data/big/"}

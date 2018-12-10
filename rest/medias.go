@@ -27,7 +27,8 @@ type MediaDTO struct {
 
 func (handler *RestMediaHandler) handleGetMedias(w http.ResponseWriter, req *http.Request) {
 	medias := media.FindAll()
-	webutils.RespondWithJSON(w, medias, false)
+	mediaDTOs, err := CreateMediaDTOs(medias)
+	webutils.RespondWithJSON(w, mediaDTOs, err != nil)
 }
 
 func (handler *RestMediaHandler) handleGetMedia(w http.ResponseWriter, req *http.Request) {
@@ -49,6 +50,18 @@ func (handler *RestMediaHandler) handleGetMedia(w http.ResponseWriter, req *http
 	}
 	mediaDTO, err := CreateMediaDTO(m, labels)
 	webutils.RespondWithJSON(w, mediaDTO, err != nil)
+}
+
+func CreateMediaDTOs(medias []*media.Media) ([]*MediaDTO, error) {
+	var mediaDTOs []*MediaDTO
+	for _, m := range medias {
+		mdto, err := CreateMediaDTO(m, nil)
+		if err != nil {
+			return nil, err
+		}
+		mediaDTOs = append(mediaDTOs, mdto)
+	}
+	return mediaDTOs, nil
 }
 
 func CreateMediaDTO(m *media.Media, labels []string) (*MediaDTO, error) {

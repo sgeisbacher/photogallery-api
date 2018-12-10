@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/robfig/cron"
+	// "github.com/robfig/cron"
 	"github.com/sgeisbacher/photogallery-api/imageconvertion"
 	"github.com/sgeisbacher/photogallery-api/importer"
 	"github.com/sgeisbacher/photogallery-api/metadata"
@@ -19,13 +19,15 @@ func main() {
 	metaDataManager := createMetaDataManager()
 
 	// start importer
-	go importManager.ScanFolder("./data/orig")
+	go func() {
+		importManager.ScanFolder("./data/orig")
+		metaDataManager.Run()
+	}()
 
 	// set up cronjobs
-	cronJobs := cron.New()
+	// cronJobs := cron.New()
 	// cronJobs.AddFunc("@every 30s", func() { metaDataManager.Run() })
-	go metaDataManager.Run()
-	cronJobs.Start()
+	// cronJobs.Start()
 
 	// create and start RestServer
 	restServer := createRestServer()
@@ -41,7 +43,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func createRestServer() rest.Server {
 	hashFileSystem := rest.HashFileSystem{
-		DataRoot: "",
+		DataRoot: ".",
 	}
 	fileSystemLogDecorator := rest.FileSystemLogDecorator{
 		FileSystem: hashFileSystem,
@@ -57,6 +59,9 @@ func createMetaDataManager() *metadata.MetaDataManager {
 	var handlers []metadata.MetaDataHandler
 	handlers = append(handlers, metadata.ShootTimeMetaDataHandler{})
 	handlers = append(handlers, metadata.ThumbnailHandler{
+		imageconvertion.ImageMagickImageConverter{},
+	})
+	handlers = append(handlers, metadata.BigPhotoHandler{
 		imageconvertion.ImageMagickImageConverter{},
 	})
 	return &metadata.MetaDataManager{

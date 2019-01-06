@@ -19,10 +19,8 @@ func main() {
 	metaDataManager := createMetaDataManager()
 
 	// start importer
-	go func() {
-		importManager.ScanFolder("./data/orig")
-		metaDataManager.Run()
-	}()
+	importManager.ScanFolder("./data/orig")
+	metaDataManager.Run()
 
 	// set up cronjobs
 	// cronJobs := cron.New()

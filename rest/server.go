@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 type Server struct {
@@ -23,5 +24,7 @@ func (srv *Server) Serve() {
 	router.Methods("GET").Path("/medias").HandlerFunc(srv.RestMediaHandler.handleGetMedias)
 	router.Methods("GET").Path("/medias/{hash}").HandlerFunc(srv.RestMediaHandler.handleGetMedia)
 	router.Methods("GET").PathPrefix("/data/media/").Handler(srv.MediaFilesHandler)
-	log.Fatal(http.ListenAndServe("127.0.0.1:8080", router))
+	handler := cors.Default().Handler(router)
+
+	log.Fatal(http.ListenAndServe("127.0.0.1:8080", handler))
 }

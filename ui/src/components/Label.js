@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 class Label extends Component {
   constructor(props) {
@@ -21,7 +22,9 @@ class Label extends Component {
             <hr/>
             <div className="thumbContainer">
               {this.state.label.Medias.map((media) => (
-                <div style={{ display: 'inline-block', margin: '5px' }}><img src={`http://localhost:8080${media.ThumbUrl}`}/></div>
+                <div style={{ display: 'inline-block', margin: '5px' }}>
+                  <Link to={`/media/${media.Hash}`}><img src={`http://localhost:8080${media.ThumbUrl}`}/></Link> 
+                </div>
               ))}
             </div>
           </div>

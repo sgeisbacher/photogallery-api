@@ -9,6 +9,7 @@ import (
 	"github.com/sgeisbacher/photogallery-api/importer"
 	"github.com/sgeisbacher/photogallery-api/metadata"
 	"github.com/sgeisbacher/photogallery-api/rest"
+	"github.com/gobuffalo/packr"
 )
 
 func main() {
@@ -27,9 +28,11 @@ func main() {
 	// cronJobs.AddFunc("@every 30s", func() { metaDataManager.Run() })
 	// cronJobs.Start()
 
+	staticBox := packr.NewBox("./ui/build")
+
 	// create and start RestServer
 	restServer := createRestServer()
-	restServer.Serve()
+	restServer.Serve(staticBox)
 
 	fmt.Println("done!")
 }

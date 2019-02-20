@@ -14,11 +14,12 @@ class Home extends Component {
   }
 
   render() {
+    const alphabeticalSorter = (a, b) => a.Name > b.Name
     if (this.state.labels) {
       return (
         <div>
           <ul>
-            {this.state.labels.map((label) =>
+            {this.state.labels.slice().sort(alphabeticalSorter).map((label) =>
               <li key={label.ID}>
                 <NavLink to={`/label/${label.ID}`}>{label.Name}</NavLink>
               </li>)}

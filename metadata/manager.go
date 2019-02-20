@@ -31,11 +31,11 @@ func (mgr *MetaDataManager) Run() {
 	}
 	medias := media.FindAll()
 	for _, m := range medias {
+		fmt.Printf("processing '%v' ...\n", m.Path)
 		changed := false
 		ctx := &MetaDataHandlerContext{media: m}
 		for _, handler := range mgr.MetaDataHandlers {
 			if handler.UpdateNeeded(ctx) {
-				fmt.Printf("processing '%v' on media '%v' ...\n", handler.GetName(), m.Hash)
 				err := runHandler(handler, ctx)
 				if err != nil {
 					fmt.Print("error while processing '%v' on '%v': %v\n", handler.GetName(), m.Hash, err)

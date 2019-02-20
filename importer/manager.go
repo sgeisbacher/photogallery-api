@@ -16,6 +16,7 @@ import (
 )
 
 type ImportMediaData struct {
+	name        string
 	size        int64
 	path        string
 	galleryName string
@@ -44,6 +45,10 @@ func (mgr ImportManager) ScanFolder(path string) error {
 			fmt.Printf("skipping file '%v' (not allowed here), because its on gallery-folder-level\n", path+file.Name())
 			continue
 		}
+		if file.Name() == "data" {
+			fmt.Printf("skipping file '%v' (not allowed here), because its on ignore-list\n", path+file.Name())
+			continue
+		}
 		fmt.Printf("importing folder %q ...\n", file.Name())
 		scanGalleryFolder(file.Name(), addSlash(path+file.Name()), imagesChan, &wg)
 	}
@@ -68,6 +73,7 @@ func scanGalleryFolder(galleryName, path string, imagesChan chan ImportMediaData
 		}
 		wg.Add(1)
 		importMediaData := ImportMediaData{
+			name:        file.Name(),
 			path:        path + file.Name(),
 			galleryName: galleryName,
 			size:        file.Size(),
@@ -86,6 +92,8 @@ func (mgr ImportManager) handleImageFile(imagesChan <-chan ImportMediaData, wg *
 
 		m := media.Media{
 			Hash:      fileHash,
+			Name:      importMediaData.name,
+			Path:      fmt.Sprintf("%s/%s", importMediaData.galleryName, importMediaData.name),
 			OrigPath:  importMediaData.path,
 			Size:      importMediaData.size,
 			MediaType: media.MEDIA_TYPE_PHOTO,

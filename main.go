@@ -20,7 +20,7 @@ func main() {
 	metaDataManager := createMetaDataManager()
 
 	// start importer
-	importManager.ScanFolder("./data/orig")
+	importManager.ScanFolder("/srv/storage/multimedia/photos")
 	metaDataManager.Run()
 
 	// set up cronjobs

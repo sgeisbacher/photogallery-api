@@ -12,5 +12,5 @@ type MediaFormat struct {
 	Path   string
 }
 
-var DEFAULT_THUMBNAIL_MEDIAFORMAT = MediaFormat{120, 120, "./data/thumbs/"}
-var DEFAULT_BIG_MEDIAFORMAT = MediaFormat{800, 600, "./data/big/"}
+var DEFAULT_THUMBNAIL_MEDIAFORMAT = MediaFormat{120, 120, "/srv/storage/multimedia/photos/data/thumbs/"}
+var DEFAULT_BIG_MEDIAFORMAT = MediaFormat{800, 600, "/srv/storage/multimedia/photos/data/big/"}

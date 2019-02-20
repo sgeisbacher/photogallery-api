@@ -8,7 +8,7 @@ class Label extends Component {
   }
 
   componentDidMount() {
-    fetch(`http://localhost:8080/labels/${this.props.match.params.id}`)
+    fetch(`/labels/${this.props.match.params.id}`)
       .then((resp) => resp.json())
       .then((label) => this.setState({label}))
   }
@@ -23,7 +23,7 @@ class Label extends Component {
             <div className="thumbContainer">
               {this.state.label.Medias.map((media) => (
                 <div style={{ display: 'inline-block', margin: '5px' }}>
-                  <Link to={`/media/${media.Hash}`}><img src={`http://localhost:8080${media.ThumbUrl}`}/></Link> 
+                  <Link to={`/media/${media.Hash}`}><img src={media.ThumbUrl}/></Link> 
                 </div>
               ))}
             </div>

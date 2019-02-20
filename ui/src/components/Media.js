@@ -16,7 +16,7 @@ class Media extends Component {
       <div>
         <div>
           <div className="mediaContainer">
-            <div style={{ display: 'inline-block', margin: '5px' }}><img src={`http://localhost:8080/data/media/big/${id}`}/></div>
+            <div style={{ display: 'inline-block', margin: '5px' }}><img src={`/data/media/big/${id}`}/></div>
           </div>
         </div>
       </div>

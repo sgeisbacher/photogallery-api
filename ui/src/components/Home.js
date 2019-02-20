@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 
-
 class Home extends Component {
   constructor(props) {
     super(props)
@@ -9,7 +8,7 @@ class Home extends Component {
   }
 
   componentDidMount() {
-    fetch('http://localhost:8080/labels')
+    fetch('/labels')
       .then((resp) => resp.json())
       .then((labels) => this.setState({labels}))
   }

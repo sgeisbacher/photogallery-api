@@ -29,8 +29,8 @@ func (srv *Server) Serve(staticBox packr.Box) {
 	router.PathPrefix("/").Handler(logger(http.FileServer(staticBox)))
 	handler := cors.Default().Handler(router)
 
-	address := "127.0.0.1:8080"
-	fmt.Printf("server listening on %#v ...", address)
+	address := ":8080"
+	fmt.Printf("server listening on %v ...", address)
 	log.Fatal(http.ListenAndServe(address, handler))
 }
 
